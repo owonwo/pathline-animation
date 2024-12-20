@@ -21,6 +21,7 @@
     "classnames": "^2.3.2",
     "date-fns": "^2.16.1",
     "motion": "^11.15.0",
+    "nanoid": "^5.0.9",
     "next": "15.1.2",
     "prettier": "^2.0.5",
     "ramda": "^0.27.1",
