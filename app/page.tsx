@@ -3,9 +3,9 @@ import React from "react";
 import { AnimateEvents, Streamlines } from "./Streamlines";
 
 const stream_paths = [
-  { id: '42FK', color: 'orange' },
-  { id: 'A6EP', color: 'lime' },
-  { id: 'KFac', color: 'dodgerblue' }
+  { id: '42FK', color: 'purple', text: 'Polygon' },
+  { id: 'A6EP', color: 'pink', text: "PolkaDot" },
+  { id: 'KFac', color: 'dodgerblue', text: 'Base' }
 ]
 
 export default function Page() {
@@ -14,8 +14,12 @@ export default function Page() {
       const entry = stream_paths[index];
 
       setTimeout(() => {
-        AnimateEvents.dispatch(entry.id);
-      }, 1000 * +index)
+        AnimateEvents.dispatch({
+          id: entry.id,
+          action: "play",
+          data: entry
+        });
+      }, 300 * +index)
     }
   }, [])
 

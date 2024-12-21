@@ -59,7 +59,7 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
   function animateText({ element: text, scale, }: AnimateParams): AnimInterface {
     function moveTo({ point }) {
       text.setAttribute('x', String(point.x + 30));
-      text.setAttribute('y', String(point.y));
+      text.setAttribute('y', String(point.y + 10));
     }
 
     function play(config) {
@@ -98,7 +98,7 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
       };
 
       const props = {
-        r: scale ?? [0, 16, 0]
+        r: scale
       };
 
       return animate(element, props, _config);
@@ -119,15 +119,15 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
     }
 
     if (el.classList.contains('circle-dot')) {
-      return animateCircle({ element: el, scale: [0, 10, 10, 0] });
+      return animateCircle({ element: el, scale: [0, 5, 5, 0] });
     }
 
     if (el.nodeName === 'radialGradient') {
-      return animateCircle({ element: el, scale: [0, 60, 60, 0] });
+      return animateCircle({ element: el, scale: [0, 30, 30, 0] });
     }
 
     if (el.classList.contains('circle-mask')) {
-      return animateCircle({ element: el, scale: [0, 60, 60, 0] });
+      return animateCircle({ element: el, scale: [0, 30, 30, 0] });
     }
 
     return fallback;
@@ -168,6 +168,13 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
       all.map(e => e?.complete?.())
       all.map(e => e.play())
     },
+    pause() {
+      all.map(animation => {
+        const time = animation.time;
+        animation.pause()
+        animation.time = time;
+      })
+    },
     cancel() {
       all.map(e => e.cancel())
     }
@@ -178,6 +185,7 @@ function MotionPath({ color, path, id }) {
   const parentElementRef = React.useRef<SVGGElement>(null);
 
   React.useLayoutEffect(() => {
+
     const parentElement = parentElementRef.current;
     if (!parentElement) return;
 
@@ -189,12 +197,20 @@ function MotionPath({ color, path, id }) {
     if (!(targetPath && movingElements.length > 0)) return;
 
     const control = createAnimationSequence({ pathEl: targetPath, movingElements });
-
     const abortController = new AbortController();
 
-    AnimateEvents.listen(
+    AnimateEvents.observe(
       id,
-      () => control.play(),
+      (event) => {
+        if (event.action === 'play') {
+          const text = movingElements.find(e => e.nodeName === 'text');
+          if (text) text.textContent = event.data.text;
+
+          return control.play();
+        }
+        if (event.action === 'pause') return control.pause();
+        if (event.action === 'cancel') return control.cancel();
+      },
       abortController.signal
     )
 
@@ -243,7 +259,7 @@ function MotionObject({ path, color }) {
       fontFamily="Inter, sans-serif"
       fontSize={11}
       fontWeight={400}
-      textAnchor="middle"
+      textAnchor="start"
     >
       {".svelte"}
     </text>
@@ -272,17 +288,25 @@ function MotionObject({ path, color }) {
 }
 
 
+type AnimInstruction = {
+  action: "play",
+  id: string,
+  data: { text: string, color: string }
+}
+  | { action: "cancel", id: string }
+  | { action: "pause", id: string }
+
 export const AnimateEvents = {
   eventKey: 'animateStart',
 
-  listen(id: string, callback: () => void, signal: AbortSignal) {
+  observe(id: string, callback: (event: AnimInstruction) => void, signal: AbortSignal) {
     window.addEventListener(this.eventKey, evt => {
-      if (evt.detail.id === id) callback();
+      if (evt.detail.id === id) callback(evt.detail);
     }, { signal });
   },
 
-  dispatch(id: string) {
-    const animateStartEvent = new CustomEvent(this.eventKey, { detail: { id: id } })
+  dispatch(detail: AnimInstruction) {
+    const animateStartEvent = new CustomEvent(this.eventKey, { detail: detail })
     window.dispatchEvent(animateStartEvent);
   }
 }
