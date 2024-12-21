@@ -3,23 +3,22 @@ import React from "react";
 import { nanoid } from 'nanoid';
 import { animate, cubicBezier } from "motion";
 
-const ControlPath = "M843.505 284.659L752.638 284.659C718.596 284.659 684.866 280.049 653.251 271.077L598.822 255.629L0.675021 1.00011"
 const TestPath1 = "M6.04102 57.5032L56.0708 133.937C74.8232 162.587 84.8114 196.084 84.8114 230.326V827.995C84.8114 871.474 68.7173 913.414 39.6311 945.732L6.04102 983.055"
 
 // Path with Gradients require a linearGradient svg def element
-export function AnimatingPath({ color = "lime", path = TestPath1, ...props }) {
+export function Streamlines({ id, color = "lime", path = TestPath1, ...props }) {
+
   return <svg
     fill="none"
     viewBox="0 0 86 984"
-    style={{
-      "--dot-color": color
-    }}
     {...props}
   >
-    <MotionPath color={color} path={path} />
+    <title>Stream lines</title>
+
+    <MotionPath color={color} path={path} id={id} />
 
     <defs>
-      <linearGradient id="a" x1="45.4262" y1="57.5032" x2="45.4262" y2="983.055" gradientUnits="userSpaceOnUse">
+      <linearGradient id="base-gradient" x1="45.4262" y1="57.5032" x2="45.4262" y2="983.055" gradientUnits="userSpaceOnUse">
         <stop stopColor="white" stopOpacity="0.18" />
         <stop offset="0.5" stopColor="#CCCCCC" stopOpacity={'0.2'} />
         <stop offset="1" stopColor="#999999" stopOpacity="0.23" />
@@ -133,7 +132,7 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
 
     return fallback;
   })
-  .filter((e): e is AnimInterface => e.kind === 'some');
+    .filter((e): e is AnimInterface => e.kind === 'some');
 
   for (const entry of animationInstance) {
     entry.reset()
@@ -175,7 +174,7 @@ function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
   }
 }
 
-function MotionPath({ color, path }) {
+function MotionPath({ color, path, id }) {
   const parentElementRef = React.useRef<SVGGElement>(null);
 
   React.useLayoutEffect(() => {
@@ -191,18 +190,24 @@ function MotionPath({ color, path }) {
 
     const control = createAnimationSequence({ pathEl: targetPath, movingElements });
 
-    if (!window.$$) {
-      window.$$ = new Set();
-    }
-    window.$$.add(control);
+    const abortController = new AbortController();
 
-    return () => control.cancel();
-  }, []);
+    AnimateEvents.listen(
+      id,
+      () => control.play(),
+      abortController.signal
+    )
+
+    return () => {
+      abortController.abort();
+      control.cancel();
+    }
+  }, [id]);
 
 
   return <g ref={parentElementRef}>
     <path
-      stroke="url(#a)"
+      stroke="url(#base-gradient)"
       strokeWidth={1.2}
       d={path}
       id="target-path"
@@ -226,7 +231,7 @@ function MotionObject({ path, color }) {
       cx={843.505}
       cy={284.659}
       r={7}
-      fill={'var(--dot-color)'}
+      fill={color}
       className="circle-dot"
     />
     <text
@@ -264,4 +269,20 @@ function MotionObject({ path, color }) {
       </mask>
     </defs>
   </g>
+}
+
+
+export const AnimateEvents = {
+  eventKey: 'animateStart',
+
+  listen(id: string, callback: () => void, signal: AbortSignal) {
+    window.addEventListener(this.eventKey, evt => {
+      if (evt.detail.id === id) callback();
+    }, { signal });
+  },
+
+  dispatch(id: string) {
+    const animateStartEvent = new CustomEvent(this.eventKey, { detail: { id: id } })
+    window.dispatchEvent(animateStartEvent);
+  }
 }
