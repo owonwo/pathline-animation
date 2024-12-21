@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { nanoid } from 'nanoid';
 import { animate, cubicBezier } from "motion";
 
 const TestPath1 = "M6.04102 57.5032L56.0708 133.937C74.8232 162.587 84.8114 196.084 84.8114 230.326V827.995C84.8114 871.474 68.7173 913.414 39.6311 945.732L6.04102 983.055"
@@ -228,13 +227,11 @@ function MotionPath({ color, path, id }) {
       d={path}
       id="target-path"
     />
-    <MotionObject path={path} color={color} />
+    <MotionObject path={path} id={`grp-${id}`} color={color} />
   </g>
 }
 
-function MotionObject({ path, color }) {
-  const id = React.useMemo(() => nanoid(4), []);
-
+function MotionObject({ path, color, id }) {
   return <g>
     <path
       stroke={`url(#filter.${id})`}
