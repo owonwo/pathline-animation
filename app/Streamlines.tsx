@@ -27,7 +27,7 @@ export function Streamlines({ id, color = "lime", path = TestPath1, ...props }) 
   </svg>
 }
 
-function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
+export function createAnimationSequence({ pathEl: targetPath, movingElements, }: {
   movingElements:
   (SVGElement | Element)[],
   pathEl: SVGPathElement
@@ -231,7 +231,7 @@ function MotionPath({ color, path, id }) {
   </g>
 }
 
-function MotionObject({ path, color, id }) {
+export function MotionObject({ path, color, id }) {
   return <g>
     <path
       stroke={`url(#filter.${id})`}
