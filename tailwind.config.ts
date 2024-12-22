@@ -2,10 +2,10 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 
 export default {
+  mode: "jit",
   content: [
-    "./app/**/*.(js|ts|tsx)",
-    "./components/**/*.(js|ts|tsx)",
-    "./pages/**/*.(js|ts|tsx)"
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.(js|ts|tsx)"
   ],
   theme: {
     extend: {

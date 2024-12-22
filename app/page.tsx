@@ -1,55 +1,111 @@
-"use client"
+"use client";
+import cn from 'classnames'
 import React from "react";
-import { MultipleLanes,  } from "./MultiplePath";
-import { AnimateEvents, Streamlines } from "./Streamlines";
+import { ANIMATION_DURATION } from "../components/animations";
+import { Variant1 } from "../components/Variant1";
+import { Variant2 } from '../components/Variant2';
+import {
+  AnimateEvents,
+  type AnimationEventPayload,
+  Streamlines,
+} from "../components/Streamlines";
 
 export default function Page() {
-  return <div className="bg-[#111] min-h-[100svh]">
-    {/* <Old /> */}
-    <New />
-  </div>
+  return (
+    <div className="bg-[#111] text-white min-h-[100svh]">
+      <Main />
+    </div>
+  );
 }
 
-function New() {
-  React.useEffect(() => {
-    function runAnimation() {
-      const stream_paths = [
-        { id: 'first-lane', color: 'purple', text: 'Polygon' },
-        { id: 'second-lane', color: 'orange', text: "Binance" },
-        { id: 'third-lane', color: 'fushia', text: 'Nubian' },
-      ]
+function Main() {
+  const subscription = React.useRef<Set<NodeJS.Timer>>(new Set());
+  const options = React.useRef([
+    { color: "fuchsia", text: "Polygon" },
+    { color: "rebeccapurple", text: "Ethereum" },
+    { color: "crimson", text: "Optimus" },
+    { color: "dodgerblue", text: "Base" },
+    { color: "yellow", text: "Binance" },
+    { color: "blue", text: "Arbitrum" },
+    { color: "white", text: "Gnosis" },
+  ]).current;
 
-      for (const index in stream_paths) {
-        const path = stream_paths[index];
+  const [variant, setVariant] = React.useState(0);
+
+  const repeatInfinitely = React.useCallback(function runFor(
+    getArray: () => Omit<AnimationEventPayload, 'id'>[],
+  ) {
+    function clearSubscriptions() {
+      subscription.current.forEach((id) => clearInterval(id));
+      subscription.current.clear();
+    }
+
+    function start() {
+      const array = getArray();
+      const lanes = getRandomN(array.length, [
+        'first-lane', 'second-lane', 'third-lane', 'fourth-lane', 'fifth-lane'
+      ]);
+
+      for (const index in array) {
+        const path = array[index];
+        const id = lanes[index];
 
         setTimeout(() => {
           AnimateEvents.dispatch({
-            id: path.id,
             action: "play",
-            data: path
+            data: { ...path, id },
           });
         }, 300 * Number(index));
       }
     }
 
-    window.addEventListener('keyup', (evt) => {
-      if (evt.code === 'ArrowUp') {
-        runAnimation();
-      }
-    })
-  }, [])
+    clearSubscriptions();
+    start();
+    const intervalId = setInterval(() => {
+      start()
+    }, ANIMATION_DURATION)
 
-  return <div className="fixed -top-4 -bottom-4 bg--200">
-    <MultipleLanes height="100svh" />
-  </div>
+    subscription.current.add(intervalId);
+  }, []);
+
+  return (
+    <main>
+      <nav className="flex fixed z-20 top-0 right-0 p-4 gap-4 uppercase text-xs">
+        <span className='opacity-30 tracking-wider'>VARIANTS</span>
+        {[0, 1].map(index => {
+          return <Button
+            key={index}
+            isActive={variant === index}
+            onClick={() => {
+              setVariant(index);
+              repeatInfinitely(() => getRandomN(2, options))
+            }}>
+            0{index + 1}
+          </Button>
+        })}
+      </nav>
+
+      <div className="pointer-events-none">
+        {variant === 0 ?
+          <div className="fixed -top-4 -bottom-4 bg-200">
+            <Variant1 width="80vw" height="105svh" />
+          </div> : null}
+
+        {variant === 1 ? <div className="fixed -top-4 -bottom-4 items-center flex justify-start bg-200">
+          <Variant2 width="40vw" height="50svh" />
+          <div className="rounded-lg border border-white/[0.12] bg-gradient-to-br from-[#212222]  via-[#111111] via-[#111212] to-[#111111] w-[400px] aspect-[1/1.2] shadow-lg shadow-black" />
+        </div> : null}
+      </div>
+    </main>
+  );
 }
 
-function Old() {
+function LegacyV1() {
   const stream_paths = React.useRef([
-    { id: '42FK', color: 'purple', text: 'Polygon' },
-    { id: 'A6EP', color: 'pink', text: "PolkaDot" },
-    { id: 'KFac', color: 'dodgerblue', text: 'Base' },
-    { id: '8Cac', color: 'crimson', text: 'Optimus' },
+    { id: "42FK", color: "purple", text: "Polygon" },
+    { id: "A6EP", color: "pink", text: "PolkaDot" },
+    { id: "KFac", color: "dodgerblue", text: "Base" },
+    { id: "8Cac", color: "crimson", text: "Optimus" },
   ]).current;
 
   React.useEffect(() => {
@@ -60,17 +116,51 @@ function Old() {
         AnimateEvents.dispatch({
           id: entry.id,
           action: "play",
-          data: entry
+          data: entry,
         });
-      }, 300 * +index)
+      }, 300 * +index);
     }
-  }, [])
+  }, [stream_paths]);
 
-  return <div className="absolute top-0 left-0 flex">
-    {stream_paths.map(e => {
-      return <div key={e.id}>
-        <Streamlines id={e.id} color={e.color} width="26vh" height="100svh" />
-      </div>
-    })}
-  </div>
+  return (
+    <div className="absolute top-0 left-0 flex">
+      {stream_paths.map((e) => {
+        return (
+          <div key={e.id}>
+            <Streamlines
+              id={e.id}
+              color={e.color}
+              width="26vh"
+              height="100svh"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Button(props: React.ComponentProps<'button'> & { isActive: boolean }) {
+  return <button type="button" className={cn("", {
+    "text-cyan-500": props.isActive
+  })} {...props} />
+}
+
+function getRandomN<T>(N: number, array: T[]) {
+  if (N > array.length) {
+    throw new Error(
+      "N cannot be greater than the number of entries in the array.",
+    );
+  }
+
+  const shuffledArray = array.slice(); // Create a copy of the original array
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [
+      shuffledArray[j],
+      shuffledArray[i],
+    ]; // Swap elements
+  }
+
+  return shuffledArray.slice(0, N);
 }

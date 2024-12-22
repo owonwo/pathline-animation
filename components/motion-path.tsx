@@ -1,19 +1,27 @@
 "use client";
 import React from "react";
 import { Slot } from '@radix-ui/react-slot';
-import { AnimateEvents, createAnimationSequence, MotionObject } from "./Streamlines";
+import { AnimateEvents, MotionObject } from "./Streamlines";
+import { createAnimationSequence } from "./animations";
 
 export function MotionPath({ id, color = "lightblue", children }) {
   const parentElementRef = React.useRef<SVGGElement>(null);
   const pathRef = React.useRef<HTMLElement>(null);
 
-  const animationPathValue = React.useMemo<string>(() => pathRef.current?.getAttribute?.('d') ?? "", []);;
+  const [animationPathValue, setAnimationPathValue] = React.useState<string>(null);
 
   React.useEffect(() => {
     const parentElement = parentElementRef.current;
     if (!parentElement) return;
 
     const targetPath = parentElement.querySelector('#target-path') as SVGPathElement;
+
+    if (!animationPathValue) {
+      const path = targetPath.getAttribute('d');
+      if (!path) return;
+
+      return setAnimationPathValue(path);
+    }
 
     const movingElements = Array.from(
       parentElement.querySelectorAll('radialGradient, circle.circle-dot, .circle-mask, text')
@@ -28,9 +36,7 @@ export function MotionPath({ id, color = "lightblue", children }) {
       id,
       (event) => {
         if (event.action === 'play') {
-          const text = movingElements.find(e => e.nodeName === 'text');
-          if (text) text.textContent = event.data.text;
-
+          control.setParams(event.data);
           return control.play();
         }
         if (event.action === 'pause') return control.pause();
@@ -43,7 +49,7 @@ export function MotionPath({ id, color = "lightblue", children }) {
       abortController.abort();
       control.cancel();
     }
-  }, [id]);
+  }, [id, animationPathValue]);
 
 
   return <g ref={parentElementRef}>
@@ -54,6 +60,9 @@ export function MotionPath({ id, color = "lightblue", children }) {
       {children}
     </Slot>
 
-    <MotionObject path={animationPathValue} id={`grp-${id}`} color={color} />
+    {animationPathValue
+      ? <MotionObject path={animationPathValue} id={`grp-${id}`} color={color} />
+      : null
+    }
   </g>
 }
