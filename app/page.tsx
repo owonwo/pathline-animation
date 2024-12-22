@@ -35,16 +35,18 @@ function Main() {
   const repeatInfinitely = React.useCallback(function runFor(
     getArray: () => Omit<AnimationEventPayload, 'id'>[],
   ) {
-    function clearSubscriptions() {
+    const ids = [
+      'first-lane', 'second-lane', 'third-lane', 'fourth-lane', 'fifth-lane'
+    ];
+
+    function stopAll() {
       subscription.current.forEach((id) => clearInterval(id));
       subscription.current.clear();
     }
 
-    function start() {
+    function playAll() {
       const array = getArray();
-      const lanes = getRandomN(array.length, [
-        'first-lane', 'second-lane', 'third-lane', 'fourth-lane', 'fifth-lane'
-      ]);
+      const lanes = getRandomN(array.length, ids);
 
       for (const index in array) {
         const path = array[index];
@@ -59,14 +61,24 @@ function Main() {
       }
     }
 
-    clearSubscriptions();
-    start();
+    stopAll();
+    playAll();
     const intervalId = setInterval(() => {
-      start()
+      playAll()
     }, ANIMATION_DURATION)
 
     subscription.current.add(intervalId);
   }, []);
+
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      repeatInfinitely(() => getRandomN(3, options));
+    }, 1000);
+
+    return () => {
+      clearTimeout(id);
+    }
+  }, [repeatInfinitely, options])
 
   return (
     <main>
@@ -92,8 +104,8 @@ function Main() {
           </div> : null}
 
         {variant === 1 ? <div className="fixed -top-4 -bottom-4 items-center flex justify-start bg-200">
-          <Variant2 width="40vw" height="50svh" />
-          <div className="rounded-lg border border-white/[0.12] bg-gradient-to-br from-[#212222]  via-[#111111] via-[#111212] to-[#111111] w-[400px] aspect-[1/1.2] shadow-lg shadow-black" />
+          <Variant2 className='w-[calc(50svw-200px)] h-[auto]' />
+          <div className="rounded-lg border border-white/[0.12] bg-gradient-to-br from-[#212222] via-[#111212] to-[#111111] w-[400px] aspect-[1/1.2] shadow-lg shadow-black" />
         </div> : null}
       </div>
     </main>
