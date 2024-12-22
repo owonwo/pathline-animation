@@ -1,5 +1,5 @@
 # Pathline Animation
----
+
 This is a demonstration of animating SVG objects along a path. I used `framer-motion` animation library and created SVG paths using Figma (see link below).
 
 Look out for the `<MotionPath />` wrapper component. It can that can be applied to any SVG path and controlled via the `AnimateEvents` object (powered by the DOM CustomEvent Object).
