@@ -123,7 +123,7 @@ function Main() {
   );
 }
 
-function LegacyV1() {
+function Legacy() {
   const stream_paths = React.useRef([
     { id: "42FK", color: "purple", text: "Polygon" },
     { id: "A6EP", color: "pink", text: "PolkaDot" },
