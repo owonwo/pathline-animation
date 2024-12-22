@@ -1,9 +1,9 @@
 "use client";
-import cn from 'classnames'
+import cn from "classnames";
 import React from "react";
 import { ANIMATION_DURATION } from "../components/animations";
 import { Variant1 } from "../components/Variant1";
-import { Variant2 } from '../components/Variant2';
+import { Variant2 } from "../components/Variant2";
 import {
   AnimateEvents,
   type AnimationEventPayload,
@@ -12,7 +12,7 @@ import {
 
 export default function Page() {
   return (
-    <div className="bg-[#111] text-white min-h-[100svh]">
+    <div>
       <Main />
     </div>
   );
@@ -33,10 +33,14 @@ function Main() {
   const [variant, setVariant] = React.useState(0);
 
   const repeatInfinitely = React.useCallback(function runFor(
-    getArray: () => Omit<AnimationEventPayload, 'id'>[],
+    getArray: () => Omit<AnimationEventPayload, "id">[]
   ) {
     const ids = [
-      'first-lane', 'second-lane', 'third-lane', 'fourth-lane', 'fifth-lane'
+      "first-lane",
+      "second-lane",
+      "third-lane",
+      "fourth-lane",
+      "fifth-lane",
     ];
 
     function stopAll() {
@@ -64,11 +68,12 @@ function Main() {
     stopAll();
     playAll();
     const intervalId = setInterval(() => {
-      playAll()
-    }, ANIMATION_DURATION)
+      playAll();
+    }, ANIMATION_DURATION);
 
     subscription.current.add(intervalId);
-  }, []);
+  },
+  []);
 
   React.useEffect(() => {
     const id = setTimeout(() => {
@@ -77,36 +82,42 @@ function Main() {
 
     return () => {
       clearTimeout(id);
-    }
-  }, [repeatInfinitely, options])
+    };
+  }, [repeatInfinitely, options]);
 
   return (
     <main>
       <nav className="flex fixed z-20 top-0 right-0 p-4 gap-4 uppercase text-xs">
-        <span className='opacity-30 tracking-wider'>VARIANTS</span>
-        {[0, 1].map(index => {
-          return <Button
-            key={index}
-            isActive={variant === index}
-            onClick={() => {
-              setVariant(index);
-              repeatInfinitely(() => getRandomN(2, options))
-            }}>
-            0{index + 1}
-          </Button>
+        <span className="opacity-10 tracking-wider">VARIANTS</span>
+        {[0, 1].map((index) => {
+          return (
+            <Button
+              key={index}
+              isActive={variant === index}
+              onClick={() => {
+                setVariant(index);
+                repeatInfinitely(() => getRandomN(2, options));
+              }}
+            >
+              0{index + 1}
+            </Button>
+          );
         })}
       </nav>
 
       <div className="pointer-events-none">
-        {variant === 0 ?
+        {variant === 0 ? (
           <div className="fixed -top-4 -bottom-4 bg-200">
             <Variant1 width="80vw" height="105svh" />
-          </div> : null}
+          </div>
+        ) : null}
 
-        {variant === 1 ? <div className="fixed -top-4 -bottom-4 items-center flex justify-start bg-200">
-          <Variant2 className='w-[calc(50svw-200px)] h-[auto]' />
-          <div className="rounded-lg border border-white/[0.12] bg-gradient-to-br from-[#212222] via-[#111212] to-[#111111] w-[400px] aspect-[1/1.2] shadow-lg shadow-black" />
-        </div> : null}
+        {variant === 1 ? (
+          <div className="fixed -top-4 -bottom-4 items-center flex justify-start bg-200">
+            <Variant2 className="w-[calc(50svw-200px)] h-[auto]" />
+            <div className="rounded-lg border border-white/[0.12] bg-gradient-to-br from-[#212222] via-[#111212] to-[#111111] w-[400px] aspect-[1/1.2] shadow-lg shadow-black" />
+          </div>
+        ) : null}
       </div>
     </main>
   );
@@ -126,7 +137,6 @@ function LegacyV1() {
 
       setTimeout(() => {
         AnimateEvents.dispatch({
-          id: entry.id,
           action: "play",
           data: entry,
         });
@@ -152,26 +162,37 @@ function LegacyV1() {
   );
 }
 
-function Button(props: React.ComponentProps<'button'> & { isActive: boolean }) {
-  return <button type="button" className={cn("", {
-    "text-cyan-500": props.isActive
-  })} {...props} />
+interface ButtonProps extends React.ComponentProps<"button"> {
+  isActive: boolean;
+}
+
+function Button(props: ButtonProps) {
+  const { isActive, children, ...PROPS } = props;
+
+  return (
+    <button
+      type="button"
+      className={cn("", {
+        "text-cyan-500": isActive,
+      })}
+      {...PROPS}
+    >
+      {children}
+    </button>
+  );
 }
 
 function getRandomN<T>(N: number, array: T[]) {
   if (N > array.length) {
     throw new Error(
-      "N cannot be greater than the number of entries in the array.",
+      "N cannot be greater than the number of entries in the array."
     );
   }
 
   const shuffledArray = array.slice(); // Create a copy of the original array
   for (let i = shuffledArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffledArray[i], shuffledArray[j]] = [
-      shuffledArray[j],
-      shuffledArray[i],
-    ]; // Swap elements
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]]; // Swap elements
   }
 
   return shuffledArray.slice(0, N);
