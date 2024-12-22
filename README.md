@@ -1,31 +1,20 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pathline Animation
+---
+This is a demonstration of animating SVG objects along a path. I used `framer-motion` animation library and created SVG paths using Figma (see link below).
+
+Look out for the `<MotionPath />` wrapper component. It can that can be applied to any SVG path and controlled via the `AnimateEvents` object (powered by the DOM CustomEvent Object).
+
+## Concept Design
+Visit [Figma Link](https://www.figma.com/design/3RnSS4apvdsYBj88thxp58/Polytope-Pathline-Animation-Concept?node-id=0-1&t=NZJfqF0ynKOKa0l3-1) to see final concept idea.
 
 ## Getting Started
-
-### Install project dependencies
-
-Install all packages assuming you have the `npm` cli which is available after installing [Nodejs](https://nodejs.org/en/ "Download NodeJS").
+### Install dependencies
 
 ```bash
 > npm install
-#or
-> yarn
 ```
 
-### Activate Git Hooks
-
-Activate `husky` by running:
-
-```bash
-> npx husky install
-# or
-> yarn run husky install
-```
-
-You can learn more about `husky` [here](https://npmjs.com/package/husky "Husky")
-
-## Starting the Development Server
-
+### Start Dev Server
 To start the development server, run the development server:
 
 ```bash
@@ -33,6 +22,8 @@ To start the development server, run the development server:
 # or
 > yarn dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 If you wish to run in a different port locally, run:
 
@@ -42,12 +33,9 @@ If you wish to run in a different port locally, run:
 > npm run dev --port=4800
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 ## Learn More
-
 To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
