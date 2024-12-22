@@ -1,5 +1,5 @@
 import type React from "react";
-import { MotionPath } from "./motion-path";
+import { MotionPath } from "./MotionPath";
 
 export const Variant2 = (props: React.ComponentProps<"svg">) => {
   return (
